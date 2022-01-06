@@ -1,19 +1,27 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-exports.__esModule = true;
-var express_1 = __importDefault(require("express"));
-var log4js_1 = __importDefault(require("log4js"));
-var logger = log4js_1["default"].getLogger();
-logger.level = process.env.LOG_LEVEL;
-logger.info('log4js log info');
-logger.debug('log4js log debug');
-logger.error('log4js log error');
-var app = (0, express_1["default"])();
-var port = 5000;
-app.get('/', function (request, response) {
-    response.send('Hello world!');
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require('express');
+const path = require("path");
+const userController = require("./controllers/users");
+// import cons from "consolidate";
+// // import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
+const mongoose = require("mongoose");
+const bodyParser = require('body-parser');
+// import bluebird from "bluebird";
+const app = express();
+const port = 5000;
+app.use(bodyParser.urlencoded({ extended: false }));
+// app.engine('html', cons.swig)
+// app.set("views", path.join(__dirname, "../views"));
+// app.set("view engine", "html");
+// app.use("/", express.static(path.join(__dirname, "../public")));
+const mongoUrl = "mongodb+srv://Fedor:57Felasi@cluster0.nilhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => { console.log(`MongoDB connection grate.`); }).catch(err => {
+    console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
+    // process.exit();
 });
-app.listen(port, function () { return console.log("Running on port ".concat(port)); });
+app.get('/', (request, response) => { response.send('Hello world!'); });
+app.get("/login", userController.getLogin);
+app.post("/register", userController.rigisterUser);
+app.listen(port, () => console.log(`Running on port ${port}`));
 //# sourceMappingURL=index.js.map
