@@ -9,41 +9,71 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rigisterUser = exports.getLogin = void 0;
+exports.loginUser = exports.rigisterUser = exports.isSignedIn = exports.cork = void 0;
 const Users_1 = require("../models/Users");
+const jwt_simple_1 = require("jwt-simple");
 const md5 = require("md5");
-// import bcrypto from "bcrypto"
-// const bodyParser = require('body-parser')
-// import { Schema, model } from "mongoose";
-// import passport from "passport";
-// create application/json parser
-// const jsonParser = bodyParser.json();
-// create application/x-www-form-urlencoded parser
-// const urlencodedParser = bodyParser.urlencoded({ extended: false };
-const getLogin = (req, res) => {
-    res.send("You're being authorised!!!");
-};
-exports.getLogin = getLogin;
+const expressJwt = require("express-jwt");
+require("dotenv").config();
+const cork = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        res.status(400).send("simpe pass");
+    }
+    catch (err) {
+        res.status(400).json({
+            error: "Registration error"
+        });
+    }
+});
+exports.cork = cork;
+exports.isSignedIn = expressJwt({
+    secret: process.env.JWT_SECRET,
+    userProperty: "auth",
+    algorithms: ["HS256"]
+});
 const rigisterUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { login, password } = req.body;
         if (!(login && password)) {
-            res.status(400).send("All input required");
+            return res.status(400).send("All input required");
         }
         const oldUser = yield Users_1.usersModel.findOne({ login });
         if (oldUser) {
-            res.status(409).send("User Already Exist. Please Login");
+            return res.status(409).send("User Already Exist. Please Login");
         }
-        const encryptedPassword = yield md5(password);
-        const newUser = new Users_1.usersModel({ login: req.body.login, email: req.body.email, password: encryptedPassword });
-        newUser.save();
-        res.status(400).send("You are authorized");
+        const encryptedPassword = md5(password);
+        const newUser = yield Users_1.usersModel.create({ login: req.body.login, email: req.body.email, password: encryptedPassword });
+        return res.status(200).json(newUser);
     }
     catch (err) {
         res.status(400).json({
-            error: "Please enter yor email and password"
+            error: "Registration error"
         });
     }
 });
 exports.rigisterUser = rigisterUser;
+const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { login, password } = req.body;
+        const user = yield Users_1.usersModel.findOne({ login });
+        if (!user) {
+            return res.json({ status: "error", error: "Invalid username" });
+        }
+        const passwordcompare = (yield md5(password)) == user.password;
+        if (passwordcompare) {
+            const token = (0, jwt_simple_1.encode)({
+                id: user._id,
+                login: user.login
+            }, process.env.JWT_SECRET, "HS256");
+            return res.json({ user, token: token });
+        }
+        else {
+            return res.json({ status: "error", error: "Check the password again" });
+        }
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+exports.loginUser = loginUser;
 //# sourceMappingURL=users.js.map

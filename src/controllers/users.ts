@@ -1,44 +1,69 @@
-
-import { Request, Response, NextFunction} from "express";
 import { usersModel } from "../models/Users";
+import { encode } from "jwt-simple";
 import * as md5 from "md5";
-import jwt from "jsonwebtoken"
-import expressjwt from "express-jwt"
-// import bcrypto from "bcrypto"
-// const bodyParser = require('body-parser')
-// import { Schema, model } from "mongoose";
-// import passport from "passport";
+import * as expressJwt from "express-jwt";
+require("dotenv").config();
 
-// create application/json parser
-// const jsonParser = bodyParser.json();
- 
-// create application/x-www-form-urlencoded parser
-// const urlencodedParser = bodyParser.urlencoded({ extended: false };
-
-
-
-export const getLogin = (req: Request, res: Response): void => {
-    res.send("You're being authorised!!!");
+export const cork = async (req, res) => {
+    try{
+        res.status(400).send("simpe pass")
+    } catch (err) {
+        res.status(400).json({
+            error:"Registration error"
+        })
+    }
 };
 
-export const rigisterUser = async (req: Request, res: Response): Promise<void> => {
+export const isSignedIn = expressJwt ({
+        secret: process.env.JWT_SECRET,
+        userProperty:"auth",
+        algorithms:["HS256"]
+    });
+
+export const  rigisterUser = async (req, res) => {
     try{
         const {login, password} = req.body;
         if (!(login && password)) {
-            res.status(400).send("All input required");
+            return res.status(400).send("All input required");
         }
         const oldUser = await usersModel.findOne({login});
         if (oldUser) {
-            res.status(409).send("User Already Exist. Please Login");
+            return res.status(409).send("User Already Exist. Please Login");
         }
-        const encryptedPassword = await md5(password);
-        const newUser = new usersModel({ login: req.body.login, email: req.body.email, password:encryptedPassword });
-        newUser.save()
-        res.status(400).send("You are authorized");
+        const encryptedPassword = md5(password);
+        const newUser = await usersModel.create({ login: req.body.login, email: req.body.email, password:encryptedPassword });
+        return res.status(200).json(newUser)
     } catch (err) {
         res.status(400).json({
-            error:"Please enter yor email and password"
+            error:"Registration error"
         })
+    }
+};
+
+export const loginUser = async (req, res) => {
+    try {
+        const {login, password} = req.body
+        const user = await usersModel.findOne({login})
+        if (!user){
+            return res.json({status:"error", error: "Invalid username"})
+        }
+        const passwordcompare = await md5(password)==user.password;
+
+        if(passwordcompare) {
+            const token = encode(
+                {
+                    id: user._id,
+                    login: user.login
+                },
+                process.env.JWT_SECRET,
+                "HS256"
+            )
+            return res.json({user, token:token})
+        } else {
+            return res.json({status:"error", error:"Check the password again"})
+        }
+    } catch(err){
+        console.log(err)
     }
 };
 
