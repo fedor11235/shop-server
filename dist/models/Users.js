@@ -1,18 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userModel = void 0;
+exports.albomsModel = exports.photosModel = exports.usersModel = void 0;
 const { Schema, model } = require("mongoose");
-// interface User {
-//     name: string;
-//     email: string;
-//     password: string;
-//   }
-// 2. Create a Schema corresponding to the document interface.
-const schemaUser = new Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    password: String
+const schemaUsers = new Schema({
+    login: { type: String, required: true, unique: true },
+    email: { type: String, unique: true },
+    password: { type: String, required: true },
+    registerDate: { type: Date, default: Date.now },
+    token: String
 });
-// 3. Create a Model.
-exports.userModel = model('User', schemaUser);
+const schemaPhotos = new Schema({
+    albumId: { type: Number, required: true, ref: 'Alboms' },
+    title: { type: String, required: true },
+    url: { type: String, required: true },
+    thumbnailUrl: { type: String, required: true },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'Users' }, //ссылка на пользователя
+});
+const schemaAlboms = new Schema({
+    title: { type: String, required: true },
+    owner: { type: String, required: true },
+});
+exports.usersModel = model('Users', schemaUsers);
+exports.photosModel = model('Photos', schemaPhotos);
+exports.albomsModel = model('Alboms', schemaAlboms);
+// default:""
 //# sourceMappingURL=Users.js.map

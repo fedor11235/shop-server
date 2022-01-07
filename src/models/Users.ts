@@ -1,32 +1,32 @@
 const { Schema, model} = require ("mongoose");
 
 
-const schemaUser = new Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    password: String,
-    registerDate: String
+const schemaUsers = new Schema({
+    login: { type: String, required: true, unique: true },
+    email: { type: String, unique: true },
+    password: { type: String, required: true },
+    registerDate: { type: Date, default: Date.now },
+    token:String
   });
 
 const schemaPhotos = new Schema({
-    albumId: { type: Number, required: true }, //ссылка на колекцию альбомов
-    title: String,
-    url: String,
-    thumbnailUrl:String,
-    owner: String, //ссылка на пользователя
+    albumId: { type: Number, required: true, ref: 'Alboms' }, //ссылка на колекцию альбомов
+    title: { type: String, required: true },
+    url: { type: String, required: true },
+    thumbnailUrl:{ type: String, required: true },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'Users' }, //ссылка на пользователя
   });
 
-const albomPhotos = new Schema({
-    title: String,
-    owner: String,
+const schemaAlboms = new Schema({
+    title: { type: String, required: true },
+    owner: { type: String, required: true },
   });
   
 
-export  const userModel = model('User', schemaUser);
-export  const photoModel = model('Photo', schemaPhotos);
-export  const albomModel = model('Albom', albomPhotos);
-
-
+export  const usersModel = model('Users', schemaUsers);
+export  const photosModel = model('Photos', schemaPhotos);
+export  const albomsModel = model('Alboms', schemaAlboms);
+// default:""
 
 
   
