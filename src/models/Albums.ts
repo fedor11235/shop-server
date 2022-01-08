@@ -1,8 +1,9 @@
-const { Schema, model} = require ("mongoose");
+const {Schema, model} = require ("mongoose");
 
-const schemaAlboms = new Schema({
-    title: { type: String, required: true },
-    owner: { type: String, required: true },
+const schemaAlbums = new Schema({
+    albumId: { type: Number, required: true },
+    title: { type: String },
+    owner: { type: String },
   });
 
-export  const albomsModel = model('Alboms', schemaAlboms);
+export  const albumsModel = model('Alboms', schemaAlbums);

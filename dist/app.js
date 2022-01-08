@@ -6,6 +6,7 @@ const allroutes = require('./routes');
 const app = express();
 const port = 5000;
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({ type: 'application/json' }));
 app.use(allroutes);
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => { console.log(`MongoDB connection grate.`); }).catch(err => {
     console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);

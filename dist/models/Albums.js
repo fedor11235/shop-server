@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.albomsModel = void 0;
+exports.albumsModel = void 0;
 const { Schema, model } = require("mongoose");
-const schemaAlboms = new Schema({
-    title: { type: String, required: true },
-    owner: { type: String, required: true },
+const schemaAlbums = new Schema({
+    albumId: { type: Number, required: true },
+    title: { type: String },
+    owner: { type: String },
 });
-exports.albomsModel = model('Alboms', schemaAlboms);
+exports.albumsModel = model('Alboms', schemaAlbums);
 //# sourceMappingURL=Albums.js.map

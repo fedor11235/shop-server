@@ -8,6 +8,7 @@ const allroutes = require('./routes')
 const app = express();
 const port = 5000;
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({type: 'application/json'}));
 app.use(allroutes);
 
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true} ).then(
