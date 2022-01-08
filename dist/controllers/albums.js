@@ -15,7 +15,7 @@ const Photos_1 = require("../models/Photos");
 const deleteAlbum = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { albumid } = req.body;
-        const albumidArr = albumid.split(",");
+        const albumidArr = yield albumid.split(",");
         const resultSort = yield Albums_1.albumsModel.deleteMany({ title: { $in: albumidArr } });
         yield Photos_1.photosModel.deleteMany({ albumId: { $in: albumidArr } });
         return res.status(200).json(resultSort);

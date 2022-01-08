@@ -1,23 +1,22 @@
 import { usersModel } from "../models/Users";
 import { encode } from "jwt-simple";
-import * as md5 from "md5";
-import * as jwt from "jsonwebtoken";
+import md5 from "md5";
+import jwt from "jsonwebtoken";
+import { Response, Request, NextFunction } from "express";
 require("dotenv").config();
 
-export function isSignedIn(req, res, next) {
+export function isSignedIn(req:Request, res:Response, next:NextFunction): any {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) return res.sendStatus(401);
     jwt.verify(token, process.env.JWT_SECRET as string, (err: any, user: any) => {
-        console.log(err);
         if (err) return res.sendStatus(403);
         req.user = user;
-        console.log(user);
         next()
     })
 }
 
-export const rigisterUser = async (req, res) => {
+export const rigisterUser = async (req:Request, res:Response): Promise<void> => {
     try {
         const { login, password, email } = req.body;
         if (!(login && password && email)) {
@@ -41,23 +40,20 @@ export const rigisterUser = async (req, res) => {
     }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req:Request, res:Response): Promise<void> => {
     try {
         let userSearch;
         const { login, password } = req.body
-        console.log(typeof (login), login)
         const resultLogin = login.search("@")
 
         if (resultLogin != -1) {
             userSearch = await usersModel.findOne({ email: login })
-            console.log("EMAIL")
         } else {
             userSearch = await usersModel.findOne({ login })
-            console.log("LOGIN")
         }
 
         if (!userSearch) {
-            return res.json({ status: "error", error: "Invalid login" })
+            return res.status(200).json({ status: "error", error: "Invalid login" })
         }
         const passwordcompare = await md5(password) == userSearch.password;
 
@@ -70,11 +66,13 @@ export const loginUser = async (req, res) => {
                 process.env.JWT_SECRET,
                 "HS256"
             )
-            return res.json({ userSearch, token: token })
+            return res.status(200).json({ userSearch, token: token })
         } else {
-            return res.json({ status: "error", error: "Check the password again" })
+            return res.status(200).json({ status: "error", error: "Check the password again" })
         }
     } catch (err) {
-        console.log(err)
+        res.status(400).json({
+            error: "login error"
+        })
     }
 };

@@ -8,24 +8,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginUser = exports.rigisterUser = exports.isSignedIn = void 0;
 const Users_1 = require("../models/Users");
 const jwt_simple_1 = require("jwt-simple");
-const md5 = require("md5");
-const jwt = require("jsonwebtoken");
+const md5_1 = __importDefault(require("md5"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv").config();
 function isSignedIn(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null)
         return res.sendStatus(401);
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        console.log(err);
+    jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err)
             return res.sendStatus(403);
         req.user = user;
-        console.log(user);
         next();
     });
 }
@@ -44,7 +45,7 @@ const rigisterUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (oldUserLogin) {
             return res.status(409).send("User Already Exist. Please Login");
         }
-        const encryptedPassword = md5(password);
+        const encryptedPassword = (0, md5_1.default)(password);
         const newUser = yield Users_1.usersModel.create({ login: req.body.login, email: req.body.email, password: encryptedPassword });
         return res.status(200).json(newUser);
     }
@@ -57,35 +58,34 @@ const rigisterUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.rigisterUser = rigisterUser;
 const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let user;
+        let userSearch;
         const { login, password } = req.body;
-        console.log(typeof (login), login);
         const resultLogin = login.search("@");
         if (resultLogin != -1) {
-            user = yield Users_1.usersModel.findOne({ email: login });
-            console.log("EMAIL");
+            userSearch = yield Users_1.usersModel.findOne({ email: login });
         }
         else {
-            user = yield Users_1.usersModel.findOne({ login });
-            console.log("LOGIN");
+            userSearch = yield Users_1.usersModel.findOne({ login });
         }
-        if (!user) {
-            return res.json({ status: "error", error: "Invalid login" });
+        if (!userSearch) {
+            return res.status(200).json({ status: "error", error: "Invalid login" });
         }
-        const passwordcompare = (yield md5(password)) == user.password;
+        const passwordcompare = (yield (0, md5_1.default)(password)) == userSearch.password;
         if (passwordcompare) {
             const token = (0, jwt_simple_1.encode)({
-                id: user._id,
-                login: user.login
+                id: userSearch._id,
+                login: userSearch.login
             }, process.env.JWT_SECRET, "HS256");
-            return res.json({ user, token: token });
+            return res.status(200).json({ userSearch, token: token });
         }
         else {
-            return res.json({ status: "error", error: "Check the password again" });
+            return res.status(200).json({ status: "error", error: "Check the password again" });
         }
     }
     catch (err) {
-        console.log(err);
+        res.status(400).json({
+            error: "login error"
+        });
     }
 });
 exports.loginUser = loginUser;

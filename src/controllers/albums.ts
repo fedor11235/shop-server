@@ -1,10 +1,11 @@
 import { albumsModel } from "../models/Albums";
 import { photosModel } from "../models/Photos";
+import { Response, Request} from "express";
 
-export const deleteAlbum = async (req, res) => {
+export const deleteAlbum = async (req:Request, res:Response): Promise<void> => {
     try {
         const { albumid } = req.body;
-        const albumidArr = albumid.split(",");
+        const albumidArr = await albumid.split(",");
         const resultSort = await albumsModel.deleteMany({ title: { $in: albumidArr } });
         await photosModel.deleteMany({ albumId: { $in: albumidArr } });
         return res.status(200).json(resultSort);
@@ -16,7 +17,7 @@ export const deleteAlbum = async (req, res) => {
     }
 };
 
-export const changeAlbumTitle = async (req, res) => {
+export const changeAlbumTitle = async (req:Request, res:Response): Promise<void> => {
     try {
         const { albumid, new_album_name } = req.body;
         const resultUpdate = await albumsModel.updateOne({ albumId: albumid }, { $set: { title: new_album_name } });

@@ -26,11 +26,12 @@ const loadFotos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             if (!error && response.statusCode == 200) {
                 const JsonPhoto = JSON.parse(body);
                 JsonPhoto.map((item) => { item.owner = req.user.login; });
-                Photos_1.photosModel.insertMany(JsonPhoto);
+                // photosModel.insertMany(JsonPhoto);
+                Photos_1.photosModel.insertMany(JsonPhoto, { "$ref": "users", "$id": "album" });
                 const jsonAlbom = RemoveDuplicates(JsonPhoto, "albumId");
                 jsonAlbom.map((item) => { item.title = item.albumId; });
                 Albums_1.albumsModel.insertMany(jsonAlbom);
-                return res.send(JsonPhoto);
+                return res.status(200).send(JsonPhoto);
             }
         });
     }
@@ -61,7 +62,7 @@ exports.getFoto = getFoto;
 const deleteFoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { photoid } = req.body;
-        const photoidArr = photoid.split(",");
+        const photoidArr = yield photoid.split(",");
         const resultSort = yield Photos_1.photosModel.deleteMany({ id: { $in: photoidArr } });
         return res.status(200).json(resultSort);
     }

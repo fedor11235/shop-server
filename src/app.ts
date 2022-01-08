@@ -1,8 +1,8 @@
-const express=require('express');
-require("dotenv").config();
+import express from "express"
+import bodyParser from "body-parser"
+import allroutes from "./routes"
 const mongoose = require ("mongoose");
-const bodyParser = require('body-parser')
-const allroutes = require('./routes')
+require("dotenv").config();
 
 
 const app = express();
@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({type: 'application/json'}));
 app.use(allroutes);
 
-mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true} ).then(
+mongoose.connect(process.env.DATABASE).then(
     () => { console.log(`MongoDB connection grate.`); },
 ).catch(err => {
     console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
